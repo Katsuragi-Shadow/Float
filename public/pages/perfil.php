@@ -112,7 +112,7 @@ if ($diffConta->y > 0) {
 }
 
 // --- Caminhos de assets -------------------------------------------------------
-$avatarDefault = '../assets/img/user/avatar.png';
+$avatarDefault = '../assets/img/user/avatars/avatar.png';
 $bannerDefault = '';   // Sem banner = fundo em gradiente
 $avatarSrc     = $usuario['avatar_path']
                     ? '../assets/img/user/avatars/' . htmlspecialchars($usuario['avatar_path'])
@@ -121,8 +121,28 @@ $bannerSrc     = $usuario['banner_path']
                     ? '../assets/img/user/banners/' . htmlspecialchars($usuario['banner_path'])
                     : '';
 
+$navbarAvatar = $sessaoId && $usuario['avatar_path']
+    ? '../assets/img/user/avatars/' . htmlspecialchars($usuario['avatar_path'])
+    : '../assets/img/user/avatars/avatar.png';
+
 $nomeSanitizado = htmlspecialchars($usuario['nome']);
 $bioSanitizada  = htmlspecialchars($usuario['bio'] ?? '');
+function formatarMesAno(string $data): string {
+    $meses = [
+        1 => 'Janeiro', 2 => 'Fevereiro', 3 => 'Março',
+        4 => 'Abril', 5 => 'Maio', 6 => 'Junho',
+        7 => 'Julho', 8 => 'Agosto', 9 => 'Setembro',
+        10 => 'Outubro', 11 => 'Novembro', 12 => 'Dezembro',
+    ];
+
+    $date = new DateTime($data);
+
+    return $meses[(int) $date->format('n')] . ' de ' . $date->format('Y');
+}
+
+$basePath   = '../';
+$activePage = 'perfil';
+
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -142,9 +162,7 @@ $bioSanitizada  = htmlspecialchars($usuario['bio'] ?? '');
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@700&family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet" />
 
     <!-- Cropper.js (apenas para o dono do perfil) -->
-    <?php if ($ehDono): ?>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css" />
-    <?php endif; ?>
 </head>
 
 <body>
@@ -153,176 +171,17 @@ $bioSanitizada  = htmlspecialchars($usuario['bio'] ?? '');
      NAVBAR  (reutiliza a mesma estrutura global)
 ════════════════════════════════════════════════ -->
 
-<nav class="nav-wrapper">
-        <div class="nav-content">
-            <a href="./index.php" class="brand-logo" aria-label="Página Inicial">
-            <img src="./assets/img/global/logo.png" alt="Float Logo" class="logo-image-custom">
-            </a>
+    <?php require_once '../includes/header.php'; ?>
 
-            <ul class="nav-list-center" id="nav-menu">
-                <li class="nav-item has-dropdown">
-                    <a href="#" class="nav-link">
-                        <i class="fa-solid fa-compass nav-custom-icon"></i>
-                        Descubra
-                        <i class="fas fa-chevron-down chevron-icon"></i>
-                    </a>
-                    <div class="mega-menu-wrapper">
-                        <div class="mega-menu-inner layout-com-midia">
-                            <div class="area-conteudo">
-                                <div class="menu-column">
-                                    <h3><i class="fa-solid fa-fire header-icon"></i> Tendências do Float</h3>
-                                    <a href="#" class="rich-link-item">
-                                        <span class="item-title"><i class="fa-solid fa-bolt mini-icon-left"></i> Mais Jogados</span>
-                                        <span class="item-desc">Os títulos indie que estão dominando a comunidade nesta semana.</span>
-                                    </a>
-                                    <a href="#" class="rich-link-item">
-                                        <span class="item-title"><i class="fa-solid fa-calendar-days mini-icon-left"></i> Recém Postados</span>
-                                        <span class="item-desc">Descubra novos talentos e seja o primeiro a comentar nos projetos.</span>
-                                    </a>
-                                </div>
-                                <div class="menu-column">
-                                    <h3><i class="fa-solid fa-layer-group header-icon"></i> Categorias</h3>
-                                    <a href="#" class="rich-link-item">
-                                        <span class="item-title"><i class="fa-solid fa-ghost mini-icon-left"></i> Terror & Suspense</span>
-                                        <span class="item-desc">Experiências imersivas criadas por desenvolvedores solo.</span>
-                                    </a>
-                                    <a href="#" class="rich-link-item">
-                                        <span class="item-title"><i class="fa-solid fa-puzzle-piece mini-icon-left"></i> Quebra-cabeça</span>
-                                        <span class="item-desc">Jogos casuais para treinar sua mente entre uma partida e outra.</span>
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </li>
-
-                <li class="nav-item has-dropdown">
-                    <a href="#" class="nav-link">
-                        <i class="fa-solid fa-book-bookmark nav-custom-icon"></i>
-                        Biblioteca
-                        <i class="fas fa-chevron-down chevron-icon"></i>
-                    </a>
-                    <div class="mega-menu-wrapper">
-                        <div class="mega-menu-inner layout-dividido">
-                            <div class="menu-column column-relative">
-                                <h3><i class="fa-solid fa-box-open header-icon"></i> Meu Acervo</h3>
-                                <a href="#" class="rich-link-item">
-                                    <span class="item-title"><i class="fa-solid fa-gamepad mini-icon-left"></i> Meus Jogos</span>
-                                    <span class="item-desc">Acesse sua lista completa de títulos salvos e baixados.</span>
-                                </a>
-                                <a href="#" class="rich-link-item">
-                                    <span class="item-title"><i class="fa-solid fa-heart mini-icon-left"></i> Lista de Desejos</span>
-                                    <span class="item-desc">Acompanhe o progresso dos jogos que você mais amou.</span>
-                                </a>
-                                <a href="#" class="rich-link-item">
-                                    <span class="item-title"><i class="fa-solid fa-clock-rotate-left mini-icon-left"></i> Histórico</span>
-                                    <span class="item-desc">Veja quais foram as últimas aventuras que você explorou.</span>
-                                </a>
-                            </div>
-                            <div class="menu-column">
-                                <h3><i class="fa-solid fa-trophy header-icon"></i> Conquistas</h3>
-                                <a href="#" class="rich-link-item">
-                                    <span class="item-title"><i class="fa-solid fa-medal mini-icon-left"></i> Badges de Membro</span>
-                                    <span class="item-desc">Ganhe insígnias apoiando desenvolvedores.</span>
-                                </a>
-                                <a href="#" class="rich-link-item">
-                                    <span class="item-title"><i class="fa-solid fa-comment-dots mini-icon-left"></i> Top Crítico</span>
-                                    <span class="item-desc">Suas avaliações ajudam a plataforma crescer.</span>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </li>
-
-                <li class="nav-item has-dropdown">
-                    <a href="#" class="nav-link">
-                        <i class="fa-solid fa-users-viewfinder nav-custom-icon"></i>
-                        Comunidade
-                        <i class="fas fa-chevron-down chevron-icon"></i>
-                    </a>
-                    <div class="mega-menu-wrapper">
-                        <div class="mega-menu-inner layout-update-column">
-                            <div class="menu-column">
-                                <h3><i class="fa-solid fa-bullhorn header-icon"></i> Social</h3>
-                                <a href="#" class="rich-link-item">
-                                    <span class="item-title"><i class="fa-solid fa-comments mini-icon-left"></i> Fóruns de Discussão</span>
-                                    <span class="item-desc">Troque ideias e feedbacks com outros jogadores.</span>
-                                </a>
-                                <a href="#" class="rich-link-item">
-                                    <span class="item-title"><i class="fa-solid fa-handshake-angle mini-icon-left"></i> Game Jams</span>
-                                    <span class="item-desc">Participe de competições de criação de jogos.</span>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </li>
-
-                <li class="nav-item has-dropdown">
-                    <a href="#" class="nav-link">
-                        <i class="fa-solid fa-code-merge nav-custom-icon"></i>
-                        Projetos
-                        <i class="fas fa-chevron-down chevron-icon"></i>
-                    </a>
-                    <div class="mega-menu-wrapper">
-                        <div class="mega-menu-inner layout-update-column">
-                            <div class="menu-column">
-                                <h3><i class="fa-solid fa-laptop-code header-icon"></i> Dashboard Dev</h3>
-                                <a href="#" class="rich-link-item">
-                                    <span class="item-title"><i class="fa-solid fa-upload mini-icon-left"></i> Publicar Jogo</span>
-                                    <span class="item-desc">Envie seu projeto e comece a construir sua audiência.</span>
-                                </a>
-                                <a href="#" class="rich-link-item">
-                                    <span class="item-title"><i class="fa-solid fa-chart-line mini-icon-left"></i> Estatísticas</span>
-                                    <span class="item-desc">Veja quantos downloads e visitas seu jogo recebeu.</span>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </li>
-            </ul>
-
-            <div class="nav-actions">
-                <?php if(!isset($_SESSION['id'])): ?>
-                    <a href="./pages/login.php" class="btn-destaque">FAZER LOGIN</a>
-                <?php else: ?>
-                    <div class="nav-auth-profile">
-                        <button class="profile-avatar-btn" id="profileTrigger">
-                            <img src="assets/img/user/avatar.png" alt="Avatar" class="nav-user-img">
-                        </button>
-                        <div class="profile-mega-menu" id="profileDropdown">
-                            <div class="menu-header">
-                                 <span class="user-name">
-                                  <?php echo isset($_SESSION['nome']) ? htmlspecialchars($_SESSION['nome']) : 'Usuário'; ?>
-                                </span>
-                                  <span class="user-status"><i class="fas fa-circle"></i> Online</span>
-                            </div>
-                            <div class="menu-divider"></div>
-                            <ul class="menu-list">
-                                <li><a href="pages/perfil.php"><i class="fas fa-user-circle"></i> <span>Meu Perfil</span></a></li>
-                                <li><a href="../api/logout.php" class="logout-item">
-                                    <i class="fas fa-sign-out-alt"></i> 
-                                    <span>Sair</span></a>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                <?php endif; ?>
-            </div>
-            
-        </div>
-
-        <button id="menu-toggle" aria-label="Abrir menu" class="mobile-menu-btn">
-            <i class="fas fa-bars"></i>
-        </button>
-    </nav>
-    
 <!-- ═══════════════════════════════════════════
      CONTEÚDO PRINCIPAL
 ════════════════════════════════════════════════ -->
 <main class="perfil-main" id="main-content">
 
-    <!-- ── HERO: Banner + Avatar ─────────────────────────────────── -->
-    <section class="perfil-hero" aria-label="Cabeçalho do perfil">
+    <div class="perfil-layout">
+        <div class="perfil-left">
+            <!-- ── HERO: Banner + Avatar ─────────────────────────────────── -->
+        <section class="perfil-hero" aria-label="Cabeçalho do perfil">
 
         <!-- Banner -->
         <div class="perfil-banner"
@@ -413,7 +272,7 @@ $bioSanitizada  = htmlspecialchars($usuario['bio'] ?? '');
                 <!-- Data de entrada -->
                 <p class="perfil-joined">
                     <i class="fa-regular fa-calendar-check" aria-hidden="true"></i>
-                    Membro desde <?= date('M Y', strtotime($usuario['criado_em'])) ?>
+                    Membro desde <?= formatarMesAno($usuario['criado_em']) ?>
                 </p>
             </div>
 
@@ -450,8 +309,11 @@ $bioSanitizada  = htmlspecialchars($usuario['bio'] ?? '');
         </div>
     </section>
 
-    <!-- ── TABS ────────────────────────────────────────────────────── -->
-    <div class="perfil-tabs-container">
+        </div>
+
+        <div class="perfil-right">
+            <!-- ── TABS ────────────────────────────────────────────────────── -->
+            <div class="perfil-tabs-container">
         <div class="perfil-tabs" role="tablist" aria-label="Seções do perfil">
             <button class="tab-btn active"
                     role="tab"
@@ -639,7 +501,8 @@ $bioSanitizada  = htmlspecialchars($usuario['bio'] ?? '');
 
         </div>
         <?php endif; ?>
-    </section>
+        </div>
+    </div>
 
 </main>
 
@@ -702,59 +565,13 @@ $bioSanitizada  = htmlspecialchars($usuario['bio'] ?? '');
             </p>
         </div>
        
-         <footer class="footer-modern">
-        <div class="footer-container">
-            <div class="footer-main">
-                <div class="footer-brand-section">
-                <img src="./assets/img/global/logo.png" alt="Float Logo" class="logo-image-custom-footer">
-                    <div class="footer-brand-text">
-                        <h3 style="color: #fff;">Plataforma Float</h3>
-                        <p style="color: #666; font-size: 0.8rem;">A casa do desenvolvimento independente. Versão Alpha 0.02</p>
-                    </div>
-                </div>
-
-                <div class="footer-socials-modern">
-                    <a href="#" target="_blank" rel="noopener noreferrer" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
-                    <a href="#" target="_blank" rel="noopener noreferrer" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
-                    <a href="#" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
-                    <a href="#" target="_blank" rel="noopener noreferrer" aria-label="Discord"><i class="fab fa-discord"></i></a>
-                </div>
-            </div>
-
-            <div class="footer-links-section">
-                <div class="footer-column">
-                    <h4>Plataforma</h4>
-                    <a href="#">Sobre a Float</a>
-                    <a href="#">Blog Oficial</a>
-                    <a href="#">Carreiras</a>
-                </div>
-                <div class="footer-column">
-                    <h4>Navegação</h4>
-                    <a href="#">Explorar Jogos</a>
-                    <a href="#">Categorias</a>
-                    <a href="#">Desenvolvedores</a>
-                </div>
-                <div class="footer-column">
-                    <h4>Suporte</h4>
-                    <a href="#">Central de Ajuda</a>
-                    <a href="#">Diretrizes</a>
-                    <a href="#">Contato</a>
-                </div>
-                <div class="footer-column">
-                    <h4>Legal</h4>
-                    <a href="#">Termos de Uso</a>
-                    <a href="#">Privacidade</a>
-                </div>
-            </div>
-
-            <div class="footer-bottom-modern">
-                <div class="footer-left">
-                    <p>© 2026 Float. Feito com <i class="fa-solid fa-heart" style="color: var(--Fogo);"></i> para a comunidade indie.</p>
-                    <p>Conectando ideias, <span style="color: var(--zzz-yellow);">elevando o jogo.</span></p>
-                </div>
-            </div>
-        </div>
-    </footer>
+<footer class="modal-footer">
+            <button class="btn-modal-cancel modal-close">Cancelar</button>
+            <button class="btn-modal-save" id="btnSalvarBio">
+                <i class="fa-solid fa-floppy-disk" aria-hidden="true"></i>
+                Salvar
+            </button>
+        </footer>
 
     </div>
 </div>
@@ -879,30 +696,13 @@ $bioSanitizada  = htmlspecialchars($usuario['bio'] ?? '');
 <!-- ═══════════════════════════════════════════
      FOOTER
 ════════════════════════════════════════════════ -->
-<footer class="footer-modern" role="contentinfo">
-    <div class="footer-container">
-        <div class="footer-bottom-modern">
-            <div class="footer-left">
-                <p>© <?= date('Y') ?> Float. Plataforma de jogos indie.</p>
-            </div>
-            <div class="footer-socials-modern">
-                <a href="#" aria-label="GitHub da Float">
-                    <i class="fab fa-github" aria-hidden="true"></i>
-                </a>
-                <a href="#" aria-label="Discord da Float">
-                    <i class="fab fa-discord" aria-hidden="true"></i>
-                </a>
-            </div>
-        </div>
-    </div>
-</footer>
+    <?php require_once '../includes/footer.php'; ?>
 
 <!-- Scripts -->
 <script src="../assets/js/global/global.js"></script>
 <?php if ($ehDono): ?>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
 <?php endif; ?>
-<script src="../assets/js/pages/perfil.js"></script>
 <!-- Dados do PHP expostos de forma segura para o JS -->
 <script>
     window.PERFIL = {
@@ -911,6 +711,7 @@ $bioSanitizada  = htmlspecialchars($usuario['bio'] ?? '');
         sessaoId:<?= $sessaoId ?? 'null' ?>
     };
 </script>
+<script src="../assets/js/pages/perfil.js"></script>
 
 </body>
 </html>
